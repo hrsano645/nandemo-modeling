@@ -1,0 +1,32 @@
+{
+    "name": "cubemeishi",
+    "build": {
+        "context": "..",
+        "dockerfile": "../Dockerfile.dev",
+        "options": [
+            "--platform=linux/amd64"
+        ]
+    },
+    "runArgs": [
+        "--env-file",
+        ".env"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.black-formatter",
+                "ms-python.isort",
+                "ms-python.vscode-pylance",
+                "ms-python.python",
+                "Gruntfuggly.todo-tree",
+                "charliermarsh.ruff",
+                "mtsmfm.vscode-stl-viewer",
+                "DavidAnson.vscode-markdownlint",
+                "ionutvmi.path-autocomplete",
+                "ms-azuretools.vscode-docker",
+                "esbenp.prettier-vscode",
+                "mhutchie.git-graph"
+            ]
+        }
+    }
+}
