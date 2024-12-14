@@ -12,29 +12,65 @@ export_dir.mkdir(exist_ok=True)
 # font filepath
 font_path = (Path(__file__).parent / Path("fonts/MPLUSRounded1c-Bold.ttf")).absolute()
 
+font_tenhama_path = (
+    Path(__file__).parent / Path("fonts/TenhamasenFontVer.3-Regular.otf")
+).absolute()
+
 
 def __generate_text_model(text: str, size, x, y, thickness) -> cq.Workplane | None:
     if not text:
         return None
     return (
         cq.Workplane("XY")
-        .text(text, size, thickness, fontPath=str(font_path))
+        .text(text, size, thickness, fontPath=str(font_tenhama_path))
         .translate((x, y, 0))
     )
 
 
+# def __generate_base_plate_square(
+#     width, height, thickness, fillet
+# ) -> cq.Workplane | None:
+#     """長方形のベースプレートを生成する"""
+#     return (
+#         cq.Workplane("XY")
+#         .box(width, height, thickness)
+#         .edges("|Z")
+#         .fillet(fillet)
+#         # 中心ではなく、左下を原点とする
+#         .translate((width / 2, height / 2, 0))
+#     )
+
+
 def __generate_base_plate_square(
-    width, height, thickness, fillet
+    width, height, thickness, fillet, **kwargs
 ) -> cq.Workplane | None:
-    """長方形のベースプレートを生成する"""
-    return (
-        cq.Workplane("XY")
-        .box(width, height, thickness)
+    """長方形のベースプレートを生成する。widthは幅、heightは高さ、thicknessは厚さ、filletは縁取りの半径
+    また、外周は3mmの縁取りを行う。高さはthickness + 3mmとなる。
+    """
+
+    center_x = width / 2
+    center_y = height / 2
+
+    def __generate_wire() -> cq.Workplane | None:
+        """長方形のワイヤーを生成する"""
+        return cq.Workplane("XY").rect(width, height)
+
+    # ベースプレートを書いていく
+    plate_result = __generate_wire()
+    plate_result = plate_result.extrude(thickness + 3).edges("|Z").fillet(fillet)
+
+    # 縁取りを行う
+    inner_plate = __generate_wire().offset2D(-2, "intersection")
+    inner_plate = (
+        inner_plate.extrude(3)
         .edges("|Z")
-        .fillet(fillet)
-        # 中心ではなく、左下を原点とする
-        .translate((width / 2, height / 2, 0))
+        .fillet(max(fillet - 2, 0))
+        .translate((0, 0, thickness))
     )
+
+    plate_result = plate_result.cut(inner_plate).translate((center_x, center_y, 0))
+
+    return plate_result
 
 
 # 引数は、全体の大きさ、アーチの高さ、上部の絞り幅、厚さ
@@ -104,9 +140,10 @@ def generate_holiday_plate(icon_dxf_path: Path, text1, text2):
     text_tickness = tickness + 3
 
     # ベースプレートを生成
-    plate_result = __generate_base_plate_arc_rapezoid(
-        width, heigth, archeigth, upper_sibori, tickness
-    )
+    plate_result = __generate_base_plate_square(width, heigth, tickness, 3)
+    # plate_result = __generate_base_plate_arc_rapezoid(
+    #     width, heigth, archeigth, upper_sibori, tickness
+    # )
 
     # 紐通しの穴
     plate_result = __generate_hole_for_string(
@@ -118,6 +155,7 @@ def generate_holiday_plate(icon_dxf_path: Path, text1, text2):
 
     # dxfファイルを読み込む
     icon_path = cq.importers.importDXF(icon_dxf_path)
+    # show_object(icon_path.wires().toPending().extrude(1))
 
     # bounding boxを取得して、中心を移動
     bbox = icon_path.val().BoundingBox()
@@ -130,6 +168,7 @@ def generate_holiday_plate(icon_dxf_path: Path, text1, text2):
     ornament_obj = (
         cq.Workplane("XY")
         .add(icon_path)
+        .wires()
         .toPending()
         .extrude(6)
         .translate((width / 2, 62, 0))
@@ -153,10 +192,12 @@ def main():
     # ソックス
     sock_plate_1 = generate_holiday_plate(
         Path(__file__).parent / "icon-socks.dxf",
-        "I WANT ...",
-        "Present!",
+        "I WANT...",
+        "プレゼント!!!!",
     )
     show_object(sock_plate_1)
+
+    exit()
 
     # プレゼント1
     presentbox1_plate_1 = generate_holiday_plate(
