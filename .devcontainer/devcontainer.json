@@ -1,8 +1,8 @@
 {
-    "name": "cubemeishi",
+    "name": "nandemo-modeling",
     "build": {
         "context": "..",
-        "dockerfile": "../Dockerfile.dev",
+        "dockerfile": "../Dockerfile",
         "options": [
             "--platform=linux/amd64"
         ]
@@ -25,7 +25,8 @@
                 "ionutvmi.path-autocomplete",
                 "ms-azuretools.vscode-docker",
                 "esbenp.prettier-vscode",
-                "mhutchie.git-graph"
+                "mhutchie.git-graph",
+                "bernhard-42.ocp-cad-viewer"
             ]
         }
     }
