@@ -1,0 +1,8 @@
+streamlit
+qrcode
+numpy-stl
+plotly
+firebase-admin
+google-cloud-storage
+cadquery==2.4.0
+numpy==1.26.4
